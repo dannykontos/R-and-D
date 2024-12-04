@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/style.css">
+
+    <title>API Ninjas Trivia Example App</title>
+
+    <style>
+        .workout-plan {
+            font-size: 0.875rem; /* Match the font size of the dropdown labels */
+            line-height: 1.2;
+            color: #333;
+        }
+        .workout-plan p {
+            margin-bottom: 0.5rem;
+        }
+        .workout-plan .exercise-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .workout-plan .exercise-instructions {
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container h-100">
+    <div class="row text-center align-items-center h-100">
+        <!-- First Section -->
+        <div class="col-md-6">
+            <div class="m-5">
+                <p>{{ question }}</p>
+            </div>
+            <div class="m-5">
+                <p id="answer" class="answer" style="display:none;">Answer: <strong>{{ answer }}</strong></p>
+                <button class="btn btn-lg btn-primary" onclick="document.getElementById('answer').style.display = 'block'; this.style.display = 'none';">Show Answer</button>
+            </div>
+            <div class="m-5">
+                <button class="btn btn-lg btn-outline-light" onclick="window.location.reload();">Next Question</button>
+            </div>
+        </div>
+        <!-- Second Section with Dropdowns -->
+        <div class="col-md-6">
+            <div class="m-5">
+                <label for="exerciseType">Exercise Type</label>
+                <select class="form-control" id="exerciseType">
+                    <option value="" disabled selected>Select an exercise type</option>
+                    <option value="cardio">Cardio</option>
+                    <option value="olympic_weightlifting">Olympic Weightlifting</option>
+                    <option value="plyometrics">Plyometrics</option>
+                    <option value="powerlifting">Powerlifting</option>
+                    <option value="strength">Strength</option>
+                    <option value="stretching">Stretching</option>
+                    <option value="strongman">Strongman</option>
+                </select>
+            </div>
+            <div class="m-5">
+                <label for="muscleGroup">Muscle Group</label>
+                <select class="form-control" id="muscleGroup">
+                    <option value="" disabled selected>Select a muscle group</option>
+                    <option value="abdominals">Abdominals</option>
+                    <option value="abductors">Abductors</option>
+                    <option value="adductors">Adductors</option>
+                    <option value="biceps">Biceps</option>
+                    <option value="calves">Calves</option>
+                    <option value="chest">Chest</option>
+                    <option value="forearms">Forearms</option>
+                    <option value="glutes">Glutes</option>
+                    <option value="hamstrings">Hamstrings</option>
+                    <option value="lats">Lats</option>
+                    <option value="lower_back">Lower Back</option>
+                    <option value="middle_back">Middle Back</option>
+                    <option value="neck">Neck</option>
+                    <option value="quadriceps">Quadriceps</option>
+                    <option value="traps">Traps</option>
+                    <option value="triceps">Triceps</option>
+                </select>
+            </div>
+            <div class="m-5">
+                <button class="btn btn-lg btn-outline-light" onclick="getWorkoutPlan()">Press here to see your workout plan</button>
+            </div>
+            <div class="m-5 workout-plan" id="workoutPlan">
+                <!-- Workout plan will be displayed here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script>
+function getWorkoutPlan() {
+    const exerciseType = document.getElementById('exerciseType').value;
+    const muscleGroup = document.getElementById('muscleGroup').value;
+
+    if (!exerciseType && !muscleGroup) {
+        alert('Please select at least one option (exercise type or muscle group).');
+        return;
+    }
+
+    fetch('/get_workout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ exercise_type: exerciseType, muscle_group: muscleGroup }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        const workoutPlanDiv = document.getElementById('workoutPlan');
+        workoutPlanDiv.innerHTML = '';
+
+        if (data.error) {
+            workoutPlanDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+        } else if (data.length === 0) {
+            workoutPlanDiv.innerHTML = '<p>No workout plans found for the selected criteria.</p>';
+        } else {
+            data.forEach(exercise => {
+                workoutPlanDiv.innerHTML += `
+                    <p>
+                        <span class="exercise-name">${exercise.name}</span><br>
+                        <span class="exercise-instructions">${exercise.instructions}</span>
+                    </p>
+                `;
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
+</body>
+</html>
